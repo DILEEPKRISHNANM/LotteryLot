@@ -6,7 +6,7 @@ export const MAX_AGE = 7 * 24 * 60 * 60; // 7 days in seconds
 export async function setAuthCookie(token:string){
     (await cookies()).set(COOKIE_NAME,token,{
         httpOnly:true,
-        secure:true,
+        secure:process.env.NODE_ENV === 'production',
         sameSite:'lax',
         maxAge:MAX_AGE,
         path:'/',
