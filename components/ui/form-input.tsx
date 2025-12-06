@@ -1,5 +1,8 @@
+'use client';
+
+import { useState } from 'react';
 import { UseFormRegisterReturn, FieldError } from 'react-hook-form';
-import { AlertCircle } from 'lucide-react';
+import { AlertCircle, Eye, EyeOff } from 'lucide-react';
 
 interface FormInputProps
   extends React.InputHTMLAttributes<HTMLInputElement> {
@@ -15,9 +18,13 @@ export function FormInput({
   register,
   helperText,
   className = '',
+  type,
   ...props
 }: FormInputProps) {
+  const [showPassword, setShowPassword] = useState(false);
   const inputId = register.name;
+  const isPassword = type === 'password';
+  const inputType = isPassword && showPassword ? 'text' : type;
 
   return (
     <div className="w-full">
@@ -31,10 +38,11 @@ export function FormInput({
       <div className="relative">
         <input
           id={inputId}
+          type={inputType}
           {...register}
           {...props}
           className={`
-            w-full px-4 py-3 border rounded-md 
+            w-full px-4 py-3 ${isPassword ? 'pr-12' : ''} border rounded-md 
             focus:outline-none focus:ring-2 transition
             disabled:bg-gray-100 disabled:cursor-not-allowed
             ${
@@ -49,7 +57,26 @@ export function FormInput({
             error ? `${inputId}-error` : helperText ? `${inputId}-helper` : undefined
           }
         />
-        {error && (
+        
+        {/* Password toggle icon */}
+        {isPassword && (
+          <button
+            type="button"
+            onClick={() => setShowPassword(!showPassword)}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 focus:outline-none transition cursor-pointer"
+            tabIndex={-1}
+            aria-label={showPassword ? 'Hide password' : 'Show password'}
+          >
+            {showPassword ? (
+              <EyeOff className="h-5 w-5" />
+            ) : (
+              <Eye className="h-5 w-5" />
+            )}
+          </button>
+        )}
+
+        {/* Error icon (only show if not password field) */}
+        {error && !isPassword && (
           <div className="absolute right-3 top-1/2 -translate-y-1/2">
             <AlertCircle className="h-5 w-5 text-red-500" />
           </div>
