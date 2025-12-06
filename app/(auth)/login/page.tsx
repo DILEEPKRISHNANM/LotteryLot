@@ -9,6 +9,7 @@ import { FormButton } from '@/components/ui/form-button';
 import { loginSchema, type LoginFormData } from '@/lib/validations/schema';
 import { toastSuccess, toastError } from '@/lib/utils/toast';
 import { LoginResponse } from '@/types/clientResponseTypes';
+import { API_AUTH_LOGIN_ENDPOINT } from '@/lib/utils/constants';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -24,7 +25,7 @@ export default function LoginPage() {
 
   const onSubmit = async (data: LoginFormData) => {
     try {
-      const response = await apiClient.post<LoginResponse>('/auth', {
+      const response = await apiClient.post<LoginResponse>(API_AUTH_LOGIN_ENDPOINT, {
         username: data.username,
         password: data.password,
       });
@@ -56,12 +57,12 @@ export default function LoginPage() {
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6" noValidate>
           <FormInput
             label="Username"
+            type="email"
             register={register('username')}
             error={errors.username}
-            placeholder="Enter your username"
+            placeholder="Enter your email"
             disabled={isSubmitting}
             required
-            autoComplete="username"
           />
 
           <FormInput
@@ -72,7 +73,6 @@ export default function LoginPage() {
             placeholder="Enter your password"
             disabled={isSubmitting}
             required
-            autoComplete="current-password"
           />
 
           <FormButton

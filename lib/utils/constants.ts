@@ -5,4 +5,5 @@ export const API_LOTTERY_LATEST_ENDPOINT = "/lottery/latest";
 export const API_LOTTERY_DATE_ENDPOINT = (date: string) =>
   `/lottery/date?date=${date}`;
 export const API_AUTH_REFRESH_ENDPOINT = "/refresh";
-export const API_AUTH_LOGIN_ENDPOINT = "/auth";
+export const API_AUTH_LOGIN_ENDPOINT = "/auth/login";
+export const API_AUTH_ME_ENDPOINT = "/me";
