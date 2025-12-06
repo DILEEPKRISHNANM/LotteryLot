@@ -3,15 +3,8 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { apiClient } from '@/lib/api/client';
-
-interface UserProfile {
-  success: boolean;
-  user: {
-    userId: string;
-    username: string;
-    role: 'admin' | 'client';
-  };
-}
+import { UserProfile } from '@/types/clientResponseTypes';
+import { API_AUTH_ME_ENDPOINT } from '@/lib/utils/constants';
 
 export default function Home() {
   const router = useRouter();
@@ -29,7 +22,7 @@ export default function Home() {
 
       try {
         // Call /api/auth/me to get user profile
-        const response = await apiClient.get<UserProfile>('/auth/me');
+        const response = await apiClient.get<UserProfile>(API_AUTH_ME_ENDPOINT);
 
         if (response.success && response.user) {
           // Redirect based on role

@@ -8,11 +8,13 @@ import { FormInput } from '@/components/ui/form-input';
 import { FormButton } from '@/components/ui/form-button';
 import { loginSchema, type LoginFormData } from '@/lib/validations/schema';
 import { toastSuccess, toastError } from '@/lib/utils/toast';
-import { LoginResponse } from '@/types/clientResponseTypes';
-import { API_AUTH_LOGIN_ENDPOINT } from '@/lib/utils/constants';
+import { LoginResponse, UserProfile } from '@/types/clientResponseTypes';
+import { API_AUTH_LOGIN_ENDPOINT, API_AUTH_ME_ENDPOINT } from '@/lib/utils/constants';
+import { useEffect, useState } from 'react';
 
 export default function LoginPage() {
   const router = useRouter();
+  const [loading, setLoading] = useState(true);
 
   const {
     register,
@@ -22,6 +24,42 @@ export default function LoginPage() {
     resolver: zodResolver(loginSchema),
     mode: 'onBlur',
   });
+
+  useEffect(()=>{
+     const checkAuth = async () => {
+      const accessToken = apiClient.getToken();
+
+      // No token, redirect to login
+      if (!accessToken) {
+        router.push('/login');
+        return;
+      }
+
+      try {
+        // Call /api/auth/me to get user profile
+        const response = await apiClient.get<UserProfile>(API_AUTH_ME_ENDPOINT);
+
+        if (response.success && response.user) {
+          // Redirect based on role
+          if (response.user.role === 'admin') {
+            router.push('/admin');
+          } else {
+            router.push('/dashboard');
+          }
+        } else {
+          router.push('/login');
+        }
+      } catch (error) {
+        // API call failed (401, etc.) - redirect to login
+        router.push('/login');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    checkAuth();
+
+  },[router])
 
   const onSubmit = async (data: LoginFormData) => {
     try {
