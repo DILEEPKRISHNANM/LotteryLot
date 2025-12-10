@@ -11,6 +11,7 @@ import { toastSuccess, toastError } from '@/lib/utils/toast';
 import { LoginResponse, UserProfile } from '@/types/clientResponseTypes';
 import { API_AUTH_LOGIN_ENDPOINT, API_AUTH_ME_ENDPOINT } from '@/lib/utils/constants';
 import { useEffect, useState } from 'react';
+import { getCurrentRoute, isAuthRoute } from '@/lib/utils/nav';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -28,9 +29,10 @@ export default function LoginPage() {
   useEffect(()=>{
      const checkAuth = async () => {
       const accessToken = apiClient.getToken();
+      const isauthRoute = isAuthRoute(getCurrentRoute());
 
       // No token, redirect to login
-      if (!accessToken) {
+      if (!accessToken && !isauthRoute) {
         router.push('/login');
         return;
       }

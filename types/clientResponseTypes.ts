@@ -28,3 +28,9 @@ export interface UserProfile {
     role: "admin" | "client";
   };
 }
+
+export interface clientRegisterForm  {
+  username : string;
+  email : string;
+  password : string;
+}
