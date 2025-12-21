@@ -7,3 +7,4 @@ export const API_LOTTERY_DATE_ENDPOINT = (date: string) =>
 export const API_AUTH_REFRESH_ENDPOINT = "/refresh";
 export const API_AUTH_LOGIN_ENDPOINT = "/auth/login";
 export const API_AUTH_ME_ENDPOINT = "/me";
+export const API_ADMIN_USERS_ENDPOINT = "/admin/users";
