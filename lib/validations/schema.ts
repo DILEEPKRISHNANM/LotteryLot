@@ -9,7 +9,7 @@ export const loginSchema = z.object({
     .string()
     .min(1, "Password is required")
     .min(6, "Password must be at least 8 characters")
-    .max(12, "Password must be at less than 12 characters"),
+    .max(15, "Password must be at less than 12 characters"),
 });
 
 //export the typescript for the schema

@@ -10,12 +10,13 @@ import { loginSchema, type LoginFormData } from '@/lib/validations/schema';
 import { toastSuccess, toastError } from '@/lib/utils/toast';
 import { LoginResponse, UserProfile } from '@/types/clientResponseTypes';
 import { API_AUTH_LOGIN_ENDPOINT, API_AUTH_ME_ENDPOINT } from '@/lib/utils/constants';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { getCurrentRoute, isAuthRoute } from '@/lib/utils/nav';
 
 export default function LoginPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
+  const hasCheckedAuth = useRef(false); // Prevent multiple checks
 
   const {
     register,
@@ -26,19 +27,27 @@ export default function LoginPage() {
     mode: 'onBlur',
   });
 
-  useEffect(()=>{
-     const checkAuth = async () => {
-      const accessToken = apiClient.getToken();
-      const isauthRoute = isAuthRoute(getCurrentRoute());
+  useEffect(() => {
+    // Only check once on mount
+    if (hasCheckedAuth.current) {
+      setLoading(false);
+      return;
+    }
 
-      // No token, redirect to login
-      if (!accessToken && !isauthRoute) {
-        router.push('/login');
+    const checkAuth = async () => {
+      hasCheckedAuth.current = true;
+      const accessToken = apiClient.getToken();
+      const currentRoute = getCurrentRoute();
+      const isauthRoute = isAuthRoute(currentRoute);
+
+      // No token and we're on login page - just stop loading, don't make API call
+      if (!accessToken) {
+        setLoading(false);
         return;
       }
 
+      // Only check auth if we have a token
       try {
-        // Call /api/auth/me to get user profile
         const response = await apiClient.get<UserProfile>(API_AUTH_ME_ENDPOINT);
 
         if (response.success && response.user) {
@@ -49,19 +58,16 @@ export default function LoginPage() {
             router.push('/dashboard');
           }
         } else {
-          router.push('/login');
+          setLoading(false);
         }
       } catch (error) {
-        // API call failed (401, etc.) - redirect to login
-        router.push('/login');
-      } finally {
+        // API call failed (401, etc.) - just stop loading, stay on login page
         setLoading(false);
       }
     };
 
     checkAuth();
-
-  },[router])
+  }, []); // Empty dependency array - only run once on mount
 
   const onSubmit = async (data: LoginFormData) => {
     try {
@@ -83,9 +89,22 @@ export default function LoginPage() {
         }, 500);
       }
     } catch (err: any) {
-      toastError(err.message || 'Login failed. Please check your credentials.');
+      const erroStatus = err.response?.status;
+      if(erroStatus === 401) {
+        toastError('Invalid credentials. Please try again.');
+      } else {
+        toastError(err.message || 'Login failed. Please check your credentials.');
+      }
     }
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4">
+        <div className="text-lg">Loading...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4">
@@ -117,7 +136,7 @@ export default function LoginPage() {
 
           <FormButton
             type="submit"
-            loading={isSubmitting}  // ✅ This disables the button automatically
+            loading={isSubmitting}
             fullWidth
             variant="primary"
           >
