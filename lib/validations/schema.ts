@@ -1,5 +1,20 @@
 import { z } from "zod";
 
+const maxFileSize = 1024 * 1024 * 5; // 5MB
+const allowedFileTypes = ["image/jpeg", "image/png", "image/jpg"];
+
+export const logoFileSchema = z.object({
+  file: z.instanceof(File).refine((file) => file.size <= maxFileSize, {
+    message: "File size must be less than 5MB",
+  }).refine((file) => allowedFileTypes.includes(file.type), {
+    message: "File type must be an image (jpeg, png, jpg)",
+  }).refine((file) => file.type === "image/jpeg" || file.type === "image/png" || file.type === "image/jpg", {
+    message: "File type must be an image (jpeg, png, jpg)",
+  }),
+});
+
+export type LogoFile = z.infer<typeof logoFileSchema>;
+
 export const loginSchema = z.object({
   username: z
     .string()
@@ -30,6 +45,7 @@ export const registerClientSchema = z.object({
     .min(1, "Display text is required")
     .max(100, "Display text must be less than 100 characters")
     .optional(),
+  logo: logoFileSchema.optional(),
 });
 
 export type RegisterClientFormData = z.infer<typeof registerClientSchema>;

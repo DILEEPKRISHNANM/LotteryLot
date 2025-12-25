@@ -28,6 +28,9 @@ export class LotteryAPIClient {
         if (this.token) {
           config.headers.Authorization = `Bearer ${this.token}`;
         }
+        if (config.data instanceof FormData) {
+          delete config.headers["Content-Type"];
+        }
         return config;
       },
       (error) => {

@@ -139,6 +139,7 @@ export default function LoginPage() {
             loading={isSubmitting}
             fullWidth
             variant="primary"
+            className="cursor-pointer"
           >
             Login
           </FormButton>

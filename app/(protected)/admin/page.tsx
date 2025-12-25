@@ -8,6 +8,7 @@ import { Client } from "@/components/admin/clientGridUtils";
 import { LogOut, Plus, Users } from "lucide-react";
 import { toastError, toastSuccess } from "@/lib/utils/toast";
 import { API_ADMIN_USERS_ENDPOINT } from "@/lib/utils/constants";
+import { AddClientModal } from "@/components/admin/AddClientModal";
 
 interface ApiResponse {
   success: boolean;
@@ -29,6 +30,7 @@ export default function AdminDashboardPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isAddClientModalOpen, setIsAddClientModalOpen] = useState(false);
 
   // Fetch clients
   const fetchClients = useCallback(
@@ -46,9 +48,15 @@ export default function AdminDashboardPage() {
 
         if (response.success && response.data) {
           if (append) {
-            setClients((prev) => [...prev, ...response.data]);
+            setClients((prev) => [
+              ...prev,
+              ...response.data.map((client, index) => ({
+                ...client,
+                slNo: (page - 1) * 10 + index + 1,
+              })),
+            ]);
           } else {
-            setClients(response.data);
+            setClients(response.data.map((client, index) => ({ ...client, slNo: index + 1 })));
           }
           setHasMore(response.pagination.hasMore);
           setCurrentPage(page);
@@ -93,9 +101,7 @@ export default function AdminDashboardPage() {
 
   // Add new client handler
   const handleAddClient = () => {
-    // TODO: Open add client modal
-    console.log("Add new client");
-    toastSuccess("Add client functionality coming soon!");
+    setIsAddClientModalOpen(true);
   };
 
   if (loading && clients.length === 0) {
@@ -179,6 +185,14 @@ export default function AdminDashboardPage() {
       >
         <Plus size={24} />
       </button>
+
+      <AddClientModal
+        isOpen={isAddClientModalOpen}
+        onClose={() => setIsAddClientModalOpen(false)}
+        onSuccess={() => {
+          fetchClients(1, false);
+        }}
+      />
     </div>
   );
 }

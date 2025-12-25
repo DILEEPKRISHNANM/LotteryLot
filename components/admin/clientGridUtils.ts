@@ -13,12 +13,11 @@ export interface Client {
   } | null;
 }
 
-
 export const clientGridConfig: clientGridColumnConfig[] = [
   {
-    id: "clientId",
-    accessorKey: "clientId",
-    header: "Client ID",
+    id: "slNo",
+    accessorKey: "slNo",
+    header: "slNo",
     type: "number",
     fallBackValue: 0,
   },
