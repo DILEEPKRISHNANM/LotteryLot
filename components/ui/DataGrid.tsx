@@ -1,14 +1,14 @@
-'use client';
+"use client";
 
-import { useMemo, useRef, useEffect } from 'react';
+import { useMemo, useRef, useEffect } from "react";
 import {
   useReactTable,
   getCoreRowModel,
   flexRender,
   ColumnDef,
-} from '@tanstack/react-table';
-import { Loader2 } from 'lucide-react';
-import { clientGridColumnConfig } from '@/types/gridTypes';
+} from "@tanstack/react-table";
+import { Loader2 } from "lucide-react";
+import { clientGridColumnConfig } from "@/types/gridTypes";
 
 interface DataGridProps<T = any> {
   data: T[];
@@ -18,48 +18,50 @@ interface DataGridProps<T = any> {
   onLoadMore?: () => void;
   emptyMessage?: string;
   customRenderers?: Record<string, (row: T) => React.ReactNode>;
+  maxHeight?: string;
 }
 
 // Render cell based on column type
-function renderCell(config: clientGridColumnConfig, value: any): React.ReactNode {
+function renderCell(
+  config: clientGridColumnConfig,
+  value: any
+): React.ReactNode {
   // Use fallback if value is null/undefined/empty
-  if (value === null || value === undefined || value === '') {
-    return <span>{config.fallBackValue ?? '-'}</span>;
+  if (value === null || value === undefined || value === "") {
+    return <span>{config.fallBackValue ?? "-"}</span>;
   }
 
   switch (config.type) {
-    case 'text':
+    case "text":
       return <span>{String(value)}</span>;
 
-    case 'number':
+    case "number":
       return <span>{Number(value).toLocaleString()}</span>;
 
-    case 'date':
+    case "date":
       const date = new Date(value);
       return (
         <span>
-          {date.toLocaleDateString('en-US', {
-            year: 'numeric',
-            month: 'short',
-            day: 'numeric',
+          {date.toLocaleDateString("en-US", {
+            year: "numeric",
+            month: "short",
+            day: "numeric",
           })}
         </span>
       );
 
-    case 'boolean':
+    case "boolean":
       return (
         <span
           className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-            value
-              ? 'bg-green-100 text-green-800'
-              : 'bg-red-100 text-red-800'
+            value ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
           }`}
         >
-          {value ? 'Yes' : 'No'}
+          {value ? "Yes" : "No"}
         </span>
       );
 
-    case 'checkbox':
+    case "checkbox":
       return (
         <input
           type="checkbox"
@@ -109,8 +111,9 @@ export function DataGrid<T = any>({
   hasMore = false,
   isLoading = false,
   onLoadMore,
-  emptyMessage = 'No data found',
+  emptyMessage = "No data found",
   customRenderers,
+  maxHeight = "600px",
 }: DataGridProps<T>) {
   const observerTarget = useRef<HTMLDivElement>(null);
 
@@ -164,7 +167,7 @@ export function DataGrid<T = any>({
     <div className="space-y-4">
       {/* Table */}
       <div className="bg-white rounded-lg shadow-md overflow-hidden">
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto" style={{ maxHeight: maxHeight }}>
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               {table.getHeaderGroups().map((headerGroup) => (
@@ -187,10 +190,7 @@ export function DataGrid<T = any>({
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {table.getRowModel().rows.map((row) => (
-                <tr
-                  key={row.id}
-                  className="hover:bg-gray-50 transition"
-                >
+                <tr key={row.id} className="hover:bg-gray-50 transition">
                   {row.getVisibleCells().map((cell) => (
                     <td key={cell.id} className="px-6 py-4 whitespace-nowrap">
                       {flexRender(
