@@ -8,7 +8,9 @@ import {
 } from "@/components/lottery/lotteryGridUtils";
 import { LotteryPreviewPanel } from "@/components/lottery/LotteryPreviewPanel";
 import { apiClient } from "@/lib/api/client";
-import { Search, Calendar, Eye } from "lucide-react";
+import { Search, Calendar, Eye, LayoutDashboard } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { API_LOTTERY_HISTORY_ENDPOINT_INTERNAL } from "@/lib/utils/constants";
 
 /**
  * History API Response interface
@@ -54,6 +56,10 @@ interface PreviewState {
  * Uses history API with offset/limit pagination
  */
 export default function ClientDashboardPage() {
+  const user = localStorage.getItem("user");
+  const userData = user ? JSON.parse(user) : null;
+  const isAdmin = userData?.role === "admin";
+  const router = useRouter();
   // Results data
   const [results, setResults] = useState<LotteryResultGridItem[]>([]);
 
@@ -94,7 +100,7 @@ export default function ClientDashboardPage() {
     async (limit: number, offset: number, append: boolean = false) => {
       try {
         const response = await apiClient.get<HistoryApiResponse>(
-          `/lottery/history?limit=${limit}&offset=${offset}`
+          API_LOTTERY_HISTORY_ENDPOINT_INTERNAL(limit, offset)
         );
 
         if (response.success && response.data) {
@@ -281,6 +287,13 @@ export default function ClientDashboardPage() {
     [handlePreview]
   );
 
+  /**
+   * Handles the goto admin dashboard
+   */
+  const handleGotoAdminDashboard = () => {
+    router.push("/admin");
+  };
+
   // Show loading state during initial load
   if (loading.initial) {
     return (
@@ -297,6 +310,17 @@ export default function ClientDashboardPage() {
         <header className="bg-white shadow-sm">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
             <h1 className="text-2xl font-bold text-gray-800">LotteryLot</h1>
+            <div>
+              {isAdmin && (
+                <button
+                  onClick={handleGotoAdminDashboard}
+                  className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100 rounded-md transition cursor-pointer"
+                >
+                  <LayoutDashboard size={18} />
+                  Admin Dashboard
+                </button>
+              )}
+            </div>
           </div>
         </header>
 

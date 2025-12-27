@@ -70,6 +70,7 @@ export class LotteryAPIClient {
               console.error("Refresh token error:", refreshError);
               this.setToken(null);
               if (typeof window !== "undefined") {
+                localStorage.removeItem("user");
                 window.location.href = "/login";
               }
               return Promise.reject(refreshError);

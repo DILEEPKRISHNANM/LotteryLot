@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { apiClient } from "@/lib/api/client";
 import { ClientGrid } from "@/components/admin/ClientGrid";
 import { Client } from "@/components/admin/clientGridUtils";
-import { LogOut, Plus, Users } from "lucide-react";
+import { LogOut, Plus, Users, LayoutDashboard } from "lucide-react";
 import { toastError, toastSuccess } from "@/lib/utils/toast";
 import { API_ADMIN_USERS_ENDPOINT } from "@/lib/utils/constants";
 import { AddClientModal } from "@/components/admin/AddClientModal";
@@ -56,7 +56,12 @@ export default function AdminDashboardPage() {
               })),
             ]);
           } else {
-            setClients(response.data.map((client, index) => ({ ...client, slNo: index + 1 })));
+            setClients(
+              response.data.map((client, index) => ({
+                ...client,
+                slNo: index + 1,
+              }))
+            );
           }
           setHasMore(response.pagination.hasMore);
           setCurrentPage(page);
@@ -89,7 +94,8 @@ export default function AdminDashboardPage() {
   // Logout handler
   const handleLogout = () => {
     apiClient.setToken(null);
-    router.push("/login");
+    localStorage.removeItem("user");
+    router.replace("/login");
   };
 
   // Edit handler
@@ -102,6 +108,10 @@ export default function AdminDashboardPage() {
   // Add new client handler
   const handleAddClient = () => {
     setIsAddClientModalOpen(true);
+  };
+
+  const handleGotoClientDashboard = () => {
+    router.push(`/dashboard`);
   };
 
   if (loading && clients.length === 0) {
@@ -124,7 +134,15 @@ export default function AdminDashboardPage() {
                 Admin Dashboard
               </h1>
             </div>
-            <div className="flex-shrink-0">
+            <div className="flex items-center gap-2 flex-shrink-0">
+              <button
+                onClick={handleGotoClientDashboard}
+                className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100 rounded-md transition cursor-pointer"
+                title="Go to Client Dashboard"
+              >
+                <LayoutDashboard size={18} />
+                <span className="hidden sm:inline">Dashboard</span>
+              </button>
               <button
                 onClick={handleLogout}
                 className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100 rounded-md transition cursor-pointer"

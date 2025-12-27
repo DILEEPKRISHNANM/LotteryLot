@@ -36,6 +36,7 @@ export function ProtectedRoute({
         const response = await apiClient.get<UserProfile>(API_AUTH_ME_ENDPOINT);
 
         if (response?.success && response?.user) {
+          localStorage.setItem('user', JSON.stringify(response.user));
           // Check role if required
           if (requiredRole && response.user.role !== requiredRole) {
             // User doesn't have required role, redirect

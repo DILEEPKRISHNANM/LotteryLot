@@ -25,6 +25,7 @@ export default function Home() {
         const response = await apiClient.get<UserProfile>(API_AUTH_ME_ENDPOINT);
 
         if (response.success && response.user) {
+          localStorage.setItem('user', JSON.stringify(response.user));
           // Redirect based on role
           if (response.user.role === 'admin') {
             router.push('/admin');
