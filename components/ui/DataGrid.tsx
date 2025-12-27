@@ -115,32 +115,54 @@ export function DataGrid<T = any>({
   customRenderers,
   maxHeight = "600px",
 }: DataGridProps<T>) {
-  const observerTarget = useRef<HTMLDivElement>(null);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const isCallingRef = useRef(false);
 
-  // Infinite scroll observer
+  // Scroll event listener for infinite scroll
   useEffect(() => {
-    if (!onLoadMore) return;
+    if (!onLoadMore || !hasMore) return;
 
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting && hasMore && !isLoading) {
-          onLoadMore();
-        }
-      },
-      { threshold: 0.1 }
-    );
+    const scrollContainer = scrollContainerRef.current;
+    if (!scrollContainer) return;
 
-    const currentTarget = observerTarget.current;
-    if (currentTarget) {
-      observer.observe(currentTarget);
-    }
+    const handleScroll = () => {
+      // Prevent multiple calls
+      if (isLoading || isCallingRef.current) return;
 
-    return () => {
-      if (currentTarget) {
-        observer.unobserve(currentTarget);
+      // Get scroll position
+      const scrollTop = scrollContainer.scrollTop;
+      const scrollHeight = scrollContainer.scrollHeight;
+      const clientHeight = scrollContainer.clientHeight;
+
+      // Calculate if we're near the bottom (within 50px)
+      const isNearBottom = scrollHeight - scrollTop - clientHeight < 50;
+
+      if (isNearBottom && hasMore && !isLoading) {
+        isCallingRef.current = true;
+        onLoadMore();
+
+        // Reset flag after a delay
+        setTimeout(() => {
+          isCallingRef.current = false;
+        }, 1000);
       }
     };
+
+    // Add scroll event listener
+    scrollContainer.addEventListener("scroll", handleScroll);
+
+    // Cleanup
+    return () => {
+      scrollContainer.removeEventListener("scroll", handleScroll);
+    };
   }, [hasMore, isLoading, onLoadMore]);
+
+  // Reset calling flag when loading completes
+  useEffect(() => {
+    if (!isLoading) {
+      isCallingRef.current = false;
+    }
+  }, [isLoading]);
 
   // Create columns from config
   const tableColumns = useMemo(
@@ -167,15 +189,19 @@ export function DataGrid<T = any>({
     <div className="space-y-4">
       {/* Table */}
       <div className="bg-white rounded-lg shadow-md overflow-hidden">
-        <div className="overflow-x-auto" style={{ maxHeight: maxHeight }}>
+        <div
+          ref={scrollContainerRef}
+          className="overflow-x-auto overflow-y-auto"
+          style={{ maxHeight: maxHeight }}
+        >
           <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
+            <thead className="bg-gray-50 sticky top-0 z-10">
               {table.getHeaderGroups().map((headerGroup) => (
                 <tr key={headerGroup.id}>
                   {headerGroup.headers.map((header) => (
                     <th
                       key={header.id}
-                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50"
                     >
                       {header.isPlaceholder
                         ? null
@@ -206,12 +232,9 @@ export function DataGrid<T = any>({
         </div>
       </div>
 
-      {/* Infinite Scroll Trigger */}
+      {/* Loading/Status Indicator */}
       {onLoadMore && (
-        <div
-          ref={observerTarget}
-          className="h-10 flex items-center justify-center"
-        >
+        <div className="h-10 flex items-center justify-center">
           {isLoading && (
             <div className="flex items-center gap-2 text-gray-500">
               <Loader2 className="animate-spin" size={20} />
