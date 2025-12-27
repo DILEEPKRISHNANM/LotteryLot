@@ -30,10 +30,10 @@ export function LotteryPreviewPanel({
   return (
     <>
       {/* Light Backdrop */}
-      <div
+      {/* <div
         className="fixed inset-0 bg-black bg-opacity-10 z-40"
         onClick={onClose}
-      />
+      /> */}
 
       {/* Side Panel */}
       <div className="fixed inset-y-0 right-0 z-50 w-full max-w-2xl">
