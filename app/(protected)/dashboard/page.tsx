@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { DataGrid } from "@/components/ui/DataGrid";
 import {
   lotteryGridConfig,
@@ -11,6 +11,11 @@ import { apiClient } from "@/lib/api/client";
 import { Search, Calendar, Eye, LayoutDashboard } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { API_LOTTERY_HISTORY_ENDPOINT_INTERNAL } from "@/lib/utils/constants";
+import {
+  isPast4PM,
+  isFirstRow,
+  scheduleDailyRefresh,
+} from "@/lib/utils/generalUtils";
 
 /**
  * History API Response interface
@@ -59,6 +64,7 @@ export default function ClientDashboardPage() {
   const user = localStorage.getItem("user");
   const userData = user ? JSON.parse(user) : null;
   const isAdmin = userData?.role === "admin";
+  const refreshTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const router = useRouter();
   // Results data
   const [results, setResults] = useState<LotteryResultGridItem[]>([]);
@@ -161,6 +167,17 @@ export default function ClientDashboardPage() {
     };
 
     loadInitial();
+  }, [fetchHistory]);
+
+  useEffect(() => {
+    (refreshTimeoutRef.current as any) = scheduleDailyRefresh(() =>
+      fetchHistory(10, 0, false)
+    );
+    return () => {
+      if (refreshTimeoutRef.current) {
+        clearTimeout(refreshTimeoutRef.current);
+      }
+    };
   }, [fetchHistory]);
 
   /**
@@ -269,6 +286,25 @@ export default function ClientDashboardPage() {
    */
   const customRenderers = useMemo(
     () => ({
+      drawDate: (row: LotteryResultGridItem) => {
+        const drawDate = new Date(row.draw_date);
+        const formattedDate = drawDate.toLocaleDateString("en-US", {
+          year: "numeric",
+          month: "long",
+          day: "numeric",
+        });
+        const showNewBadge = isFirstRow(filteredResults, row) && isPast4PM();
+        return (
+          <div className="relative inline-block w-full">
+            <span>{formattedDate}</span>
+            {showNewBadge && (
+              <span className="absolute -top-2 -right-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 border border-blue-200 shadow-sm z-10">
+                New
+              </span>
+            )}
+          </div>
+        );
+      },
       actions: (row: LotteryResultGridItem) => (
         <div className="flex items-center justify-end gap-2">
           <button
@@ -284,7 +320,7 @@ export default function ClientDashboardPage() {
         </div>
       ),
     }),
-    [handlePreview]
+    [handlePreview, filteredResults, isPast4PM, isFirstRow]
   );
 
   /**

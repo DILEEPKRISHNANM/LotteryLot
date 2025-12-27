@@ -30,7 +30,7 @@ export const lotteryGridConfig: clientGridColumnConfig[] = [
   },
   {
     id: "firstPrize",
-    accessorKey: "first.ticket",
+    accessorKey: "first_ticket",
     header: "First Prize",
     type: "text",
     fallBackValue: "-",
