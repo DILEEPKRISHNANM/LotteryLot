@@ -32,7 +32,8 @@ export const isPast4PM = () => {
 
 /**
  * Checks if a result is the first row in the filtered results
- * @param result - The lottery result to check
+ * @param filteredResults - The filtered results to check
+ * @param result - The lottery result to che
  * @returns true if it's the first row, false otherwise
  */
 export const isFirstRow = (
