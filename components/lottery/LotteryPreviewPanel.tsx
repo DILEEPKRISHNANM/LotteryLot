@@ -1,7 +1,8 @@
 "use client";
 
-import { X, Printer } from "lucide-react";
+import { X, Printer, Plus } from "lucide-react";
 import { LotteryResultGridItem } from "./lotteryGridUtils";
+import { useState } from "react";
 
 interface LotteryPreviewPanelProps {
   isOpen: boolean;
@@ -16,6 +17,9 @@ export function LotteryPreviewPanel({
   result,
   onPrint,
 }: LotteryPreviewPanelProps) {
+  const [ticketRanges, setTicketRanges] = useState<any[]>([]);
+  const [showAddRangeOverlay, setShowAddRangeOverlay] = useState(false);
+  const [rangeInputs, setRangeInputs] = useState<any>([]);
   if (!isOpen || !result) return null;
 
   const handlePrint = () => {
@@ -24,6 +28,44 @@ export function LotteryPreviewPanel({
     } else {
       // Default print behavior
       window.print();
+    }
+  };
+  const handleAddRange = () => {
+    setShowAddRangeOverlay(!showAddRangeOverlay);
+  };
+
+  const handleAddNewInputPair = () => {
+    const newInputPair = {
+      id: Date.now().toString(),
+      start: "",
+      end: "",
+    };
+    setRangeInputs([...rangeInputs, newInputPair]);
+  };
+
+  const handleInputChange = (value: string, field: string, id: string) => {
+    setRangeInputs(
+      rangeInputs.map((range: any) =>
+        range.id === id ? { ...range, [field]: value } : range
+      )
+    );
+  };
+
+  const handleRemoveInput = (id: string) => {
+    setRangeInputs(rangeInputs.filter((range: any) => range.id !== id));
+  };
+
+  const handleSaveRange = (id: string) => {
+    const input = rangeInputs.find((inp: any) => inp.id === id);
+    if (input && ((input?.start || "").trim() || (input?.end || "")?.trim())) {
+      setTicketRanges([
+        ...ticketRanges,
+        {
+          id: Date.now().toString(),
+          start: (input?.start || "").trim(),
+          end: (input?.end || "").trim(),
+        },
+      ]);
     }
   };
 
@@ -49,12 +91,104 @@ export function LotteryPreviewPanel({
                 {new Date(result.draw_date).toLocaleDateString()}
               </p>
             </div>
-            <button
-              onClick={onClose}
-              className="text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full p-2 transition"
-            >
-              <X size={20} />
-            </button>
+            <div className="flex items-center gap-2">
+              <div className="relative">
+                <button
+                  title="Add Range"
+                  className="cursor-pointer mt-1.5"
+                  onClick={handleAddRange}
+                >
+                  <Plus size={20} />
+                </button>
+                {showAddRangeOverlay && (
+                  <div className="absolute top-full right-0 mt-2 z-50 bg-white shadow-xl rounded-lg p-4 min-w-[500px] border border-gray-200">
+                    <div className="flex items-center justify-between gap-2">
+                      <h3 className="text-lg font-semibold text-gray-800">
+                        Add Range
+                      </h3>
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={handleAddNewInputPair}
+                          className="text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full p-2 transition cursor-pointer "
+                        >
+                          <Plus size={20} />
+                        </button>
+                        <button
+                          onClick={() => setShowAddRangeOverlay(false)}
+                          className="text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full p-2 transition cursor-pointer"
+                        >
+                          <X size={20} />
+                        </button>
+                      </div>
+                    </div>
+                    <div className="space-y-3">
+                      {rangeInputs.map((range: any) => {
+                        return (
+                          <div
+                            key={range.id}
+                            className="flex items-center gap-2"
+                          >
+                            <div className="flex justify-between items-center mb-2">
+                              <span className="text-sm font-medium text-gray-700">
+                                Range
+                              </span>
+                              <button
+                                onClick={() => handleRemoveInput(range.id)}
+                                className="text-red-500 hover:text-red-700"
+                                title="Remove"
+                              >
+                                <X size={16} />
+                              </button>
+                            </div>
+                            <input
+                              type="text"
+                              placeholder="Start Range"
+                              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                              value={range.start}
+                              onChange={(e) =>
+                                handleInputChange(
+                                  e.target.value,
+                                  "start",
+                                  range.id
+                                )
+                              }
+                            />
+                            <input
+                              type="text"
+                              placeholder="End Range"
+                              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                              value={range.end}
+                              onChange={(e) =>
+                                handleInputChange(
+                                  e.target.value,
+                                  "end",
+                                  range.id
+                                )
+                              }
+                            />
+                            <button
+                              onClick={() => handleSaveRange(range.id)}
+                              disabled={
+                                !range.start.trim() || !range.end.trim()
+                              }
+                              className="w-full px-3 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition disabled:bg-gray-300 disabled:cursor-not-allowed text-sm"
+                            >
+                              Save Range
+                            </button>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+              </div>
+              <button
+                onClick={onClose}
+                className="text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full p-2 transition"
+              >
+                <X size={20} />
+              </button>
+            </div>
           </div>
 
           {/* Scrollable Content */}

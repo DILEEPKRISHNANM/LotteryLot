@@ -1,4 +1,5 @@
 import { LotteryResultGridItem } from "@/components/lottery/lotteryGridUtils";
+import jsPDF from "jspdf";
 
 /**
  * Schedules a daily refresh of the data
@@ -41,4 +42,43 @@ export const isFirstRow = (
   result: LotteryResultGridItem
 ): boolean => {
   return filteredResults.length > 0 && filteredResults[0].id === result.id;
+};
+
+// ---------------------------------------- PDF Utils ----------------------------------------
+
+/**
+ *
+ * @param result - The lottery result to convert to PDF payload
+ * @returns The PDF payload
+ */
+export const pdfGenerator = (
+  result: LotteryResultGridItem,
+  logoUrl: string,
+  displayText: string,
+  ticketRanges?: any
+): any => {
+  const doc = new jsPDF({
+    orientation: "portrait",
+    unit: "mm",
+    format: "a4",
+    compress: true,
+  });
+  const pageWidth = doc.internal.pageSize.getWidth();
+  const pageHeight = doc.internal.pageSize.getHeight();
+  let yPosition = 10;
+
+  /*******
+   * Logo Size
+   */
+  const logoWidth = 20;
+  const logoSize = 20;
+  doc.addImage(logoUrl, "PNG", 10, yPosition, logoWidth, logoSize);
+
+  doc.setFontSize(16);
+  doc.text(displayText, 35, yPosition + logoSize / 2, {
+    align: "left",
+    baseline: "middle",
+  });
+  doc.save(`${result.draw_name}-${result.draw_code}-${result.draw_date}.pdf`);
+  return doc;
 };
