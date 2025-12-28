@@ -1,6 +1,6 @@
 "use client";
 
-import { X, Printer, Plus } from "lucide-react";
+import { X, Printer, Plus, SaveIcon } from "lucide-react";
 import { LotteryResultGridItem } from "./lotteryGridUtils";
 import { useState } from "react";
 
@@ -57,7 +57,7 @@ export function LotteryPreviewPanel({
 
   const handleSaveRange = (id: string) => {
     const input = rangeInputs.find((inp: any) => inp.id === id);
-    if (input && ((input?.start || "").trim() || (input?.end || "")?.trim())) {
+    if ((input && (input?.start).trim()) || input?.end.trim()) {
       setTicketRanges([
         ...ticketRanges,
         {
@@ -132,13 +132,6 @@ export function LotteryPreviewPanel({
                               <span className="text-sm font-medium text-gray-700">
                                 Range
                               </span>
-                              <button
-                                onClick={() => handleRemoveInput(range.id)}
-                                className="text-red-500 hover:text-red-700"
-                                title="Remove"
-                              >
-                                <X size={16} />
-                              </button>
                             </div>
                             <input
                               type="text"
@@ -167,13 +160,20 @@ export function LotteryPreviewPanel({
                               }
                             />
                             <button
+                              onClick={() => handleRemoveInput(range.id)}
+                              className="text-red-500 hover:text-red-700 cursor-pointer"
+                              title="Remove"
+                            >
+                              <X size={20} />
+                            </button>
+                            <button
                               onClick={() => handleSaveRange(range.id)}
                               disabled={
                                 !range.start.trim() || !range.end.trim()
                               }
-                              className="w-full px-3 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition disabled:bg-gray-300 disabled:cursor-not-allowed text-sm"
+                              className="cursor-pointer text-green-500 hover:text-green-700"
                             >
-                              Save Range
+                              <SaveIcon size={16} />
                             </button>
                           </div>
                         );
