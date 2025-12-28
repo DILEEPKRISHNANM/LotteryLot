@@ -14,11 +14,19 @@ export async function GET(request: Request) {
       .eq("user_id", user.userId)
       .single();
     if (error || !data) {
-      return NextResponse.json({ error: "Failed to fetch user details" }, { status: 500 });
+      console.log(error);
+      return NextResponse.json(
+        { success: false, error: "Failed to fetch user details" },
+        { status: 500 }
+      );
     }
     return NextResponse.json({
       success: true,
-      data: { ...data, logo_url: data.logo_url || null, display_text: data.display_text || null },
+      data: {
+        ...data,
+        logo_url: data.logo_url || null,
+        display_text: data.display_text || null,
+      },
     });
   } catch (error) {
     if (error instanceof Response) {

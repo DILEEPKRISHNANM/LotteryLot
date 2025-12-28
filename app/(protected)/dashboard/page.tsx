@@ -10,11 +10,16 @@ import { LotteryPreviewPanel } from "@/components/lottery/LotteryPreviewPanel";
 import { apiClient } from "@/lib/api/client";
 import { Search, Calendar, Eye, LayoutDashboard } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { API_LOTTERY_HISTORY_ENDPOINT_INTERNAL } from "@/lib/utils/constants";
+import {
+  API_CLIENT_DATA_ENDPOINT_INTERNAL,
+  API_LOTTERY_HISTORY_ENDPOINT_INTERNAL,
+  lotterlotBase64,
+} from "@/lib/utils/constants";
 import {
   isPast4PM,
   isFirstRow,
   scheduleDailyRefresh,
+  pdfGenerator,
 } from "@/lib/utils/generalUtils";
 
 /**
@@ -256,9 +261,21 @@ export default function ClientDashboardPage() {
    * TODO: Implement print with logo overlay
    * @param result - The lottery result to print
    */
-  const handlePrint = useCallback((result: LotteryResultGridItem) => {
-    console.log("Print result:", result);
-    window.print();
+  const handlePrint = useCallback(async (result: LotteryResultGridItem) => {
+    if (isAdmin) {
+      pdfGenerator(result, lotterlotBase64, "lotteryLot", null);
+      return;
+    }
+    await apiClient
+      .get<any>(API_CLIENT_DATA_ENDPOINT_INTERNAL)
+      .then((response) => {
+        if (!response?.success) {
+          pdfGenerator(result, lotterlotBase64, "lotteryLot", null);
+        }
+      })
+      .catch((err) => {
+        pdfGenerator(result, lotterlotBase64, "lotteryLot", null);
+      });
   }, []);
 
   /**
